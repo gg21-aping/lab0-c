@@ -236,10 +236,41 @@ void q_reverseK(struct list_head *head, int k)
     }
 }
 
+static inline bool is_descend(char *a, char *b, bool descend)
+{
+    int cmp = strcmp(a, b);
+    return ((cmp < 0) && !descend) || ((cmp > 0 && descend));
+}
+
 static void q_merge_two(struct list_head *list1,
                         struct list_head *list2,
                         bool descend)
 {
+    struct list_head *iter;
+
+    if (list_empty(list1)) {
+        list_splice_init(list2, list1);
+        return;
+    } else if (list_empty(list2))
+        return;
+
+    iter = list1->next;
+
+    while (iter != list1 && !list_empty(list2)) {
+        element_t *e1 = list_entry(iter, element_t, list);
+        element_t *e2 = list_first_entry(list2, element_t, list);
+
+        if (!is_descend(e1->value, e2->value, descend)) {
+            /* e2 is greater than e1 */
+            list_move_tail(&e2->list, iter);
+        } else {
+            /* e1 is greater than e2 */
+            iter = iter->next;
+        }
+    }
+
+    if (!list_empty(list2))
+        list_splice_tail_init(list2, list1);
 }
 
 /* Sort elements of queue in ascending/descending order */

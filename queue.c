@@ -4,6 +4,13 @@
 
 #include "queue.h"
 
+/* Iterate through a list reversely */
+#define list_for_each_entry_safe_reverse(entry, safe, head, member)    \
+    for (entry = list_entry((head)->prev, typeof(*entry), member),     \
+        safe = list_entry(entry->member.prev, typeof(*entry), member); \
+         &entry->member != (head); entry = safe,                       \
+        safe = list_entry(safe->member.prev, typeof(*entry), member))
+
 /* Create an empty queue */
 struct list_head *q_new()
 {

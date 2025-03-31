@@ -178,23 +178,21 @@ bool q_delete_dup(struct list_head *head)
     // given sorted queue, remove the duplicated elements
 
     element_t *curr = NULL, *next = NULL;
+    bool should_delete = false;
 
     if (!head || list_empty(head))
         return false;
 
     list_for_each_entry_safe(curr, next, head, list) {
-        if (&next->list == head)
-            break;
+        bool duplicate =
+            (&next->list != head && !strcmp(curr->value, next->value));
 
-        if (!curr->value || !next->value)
-            return false;
-
-        if (!strcmp(curr->value, next->value)) {
+        if (duplicate || should_delete) {
             list_del(&curr->list);
             q_release_element(curr);
+            should_delete = duplicate;
         }
     }
-
     return true;
 }
 

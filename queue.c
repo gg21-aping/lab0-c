@@ -306,12 +306,44 @@ void q_sort(struct list_head *head, bool descend)
     q_merge_two(head, &temp, descend);
 }
 
+/**
+ * q_make_monotonic() - Remove nodes to make queue monotonic
+ * @head: header of queue
+ * @descend: whether to filter for descending (true) or ascending (false)
+ *
+ * Return: the number of elements in queue after performing operation
+ */
+static int q_make_monotonic(struct list_head *head, bool descend)
+{
+    element_t *curr, *next;
+    char *extreme = NULL;
+
+    if (!head || list_empty(head) || list_is_singular(head))
+        return q_size(head);
+
+    list_for_each_entry_safe_reverse(curr, next, head, list)
+    {
+        if (!extreme) {
+            extreme = curr->value;
+            continue;
+        }
+        if (is_descend(extreme, curr->value, descend)) {
+            list_del(&curr->list);
+            q_release_element(curr);
+        } else {
+            extreme = curr->value;
+        }
+    }
+
+    return q_size(head);
+}
+
 /* Remove every node which has a node with a strictly less value anywhere to
  * the right side of it */
 int q_ascend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    return q_make_monotonic(head, false);
 }
 
 /* Remove every node which has a node with a strictly greater value anywhere to
@@ -319,7 +351,7 @@ int q_ascend(struct list_head *head)
 int q_descend(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-nodes-from-linked-list/
-    return 0;
+    return q_make_monotonic(head, true);
 }
 
 /* Merge all the queues into one sorted queue, which is in ascending/descending
